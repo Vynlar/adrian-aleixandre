@@ -59,7 +59,7 @@ view model =
         ]
         (column [ width fill ]
             [ column
-                [ width (maximum 1366 fill)
+                [ width (maximum 1600 fill)
                 , centerX
                 , spacing (scaledInt 6)
                 , padding (globalPadding device)
@@ -382,7 +382,7 @@ footer device =
                                 ]
                             ]
                     }
-                , footerSection { title = "this site", body = text "Designed and build by me with Elm." }
+                , footerSection { title = "this site", body = paragraph [] [ text "Designed and built by me with Elm." ] }
                 ]
             )
         )
