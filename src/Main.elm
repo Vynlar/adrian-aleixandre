@@ -388,7 +388,7 @@ footer device =
 
 footerSection : { title : String, body : Element msg } -> Element msg
 footerSection { title, body } =
-    column [ spacing (scaledInt 1), width (maximum 300 fill) ]
+    column [ spacing (scaledInt 1), width (maximum 450 fill) ]
         [ smallCaps title
         , body
         ]
