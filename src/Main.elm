@@ -1,15 +1,13 @@
 module Main exposing (main)
 
 import Browser
-import Browser.Dom exposing (Viewport, getViewport)
-import Browser.Events exposing (onAnimationFrame)
-import Element exposing (Attr, Color, Device, DeviceClass(..), Element, alignBottom, alignLeft, alignRight, centerX, centerY, classifyDevice, clip, clipX, column, el, fill, fillPortion, height, htmlAttribute, image, maximum, moveLeft, moveRight, moveUp, onLeft, padding, paragraph, px, row, spacing, text, width)
+import Browser.Events
+import Element exposing (Attr, Attribute, Color, Device, DeviceClass(..), Element, alignBottom, alignRight, alignTop, centerX, centerY, classifyDevice, clipX, clipY, column, el, fill, height, htmlAttribute, image, link, maximum, mouseOver, moveDown, moveLeft, moveRight, moveUp, newTabLink, onLeft, padding, paddingEach, paddingXY, paragraph, px, row, spacing, text, textColumn, width)
 import Element.Background as Background
-import Element.Font as Font exposing (bold, heavy, size)
+import Element.Border exposing (shadow)
+import Element.Font as Font
 import Html exposing (Html)
-import Html.Attributes exposing (style)
-import Task
-import Time exposing (Posix)
+import Html.Attributes
 
 
 main =
@@ -31,35 +29,47 @@ scaledInt =
     scaled >> round
 
 
+globalPadding : Device -> Int
+globalPadding device =
+    case device.class of
+        Phone ->
+            scaledInt 4
+
+        Tablet ->
+            scaledInt 4
+
+        Desktop ->
+            scaledInt 8
+
+        BigDesktop ->
+            scaledInt 8
+
+
 view : Model -> Html msg
 view model =
     let
         device =
             classifyDevice model.window
-
-        paddingAmount =
-            case device.class of
-                Phone ->
-                    scaledInt 4
-
-                Tablet ->
-                    scaledInt 4
-
-                Desktop ->
-                    scaledInt 8
-
-                BigDesktop ->
-                    scaledInt 8
     in
     Element.layout
         [ Font.family [ Font.typeface "futura-pt", Font.typeface "sans-serif" ]
         , width fill
-        , padding paddingAmount
         , clipX
+        , clipY
         ]
-        (column [ width (maximum 1366 fill), centerX, spacing (scaledInt 3) ]
-            [ header
-            , hero device
+        (column [ width fill ]
+            [ column
+                [ width (maximum 1366 fill)
+                , centerX
+                , spacing (scaledInt 6)
+                , padding (globalPadding device)
+                , clipX
+                ]
+                [ header
+                , hero device
+                , portfolio device
+                ]
+            , footer device
             ]
         )
 
@@ -96,31 +106,44 @@ hero device =
         , spacing (scaledInt 2)
         ]
         [ buttons [ spacing (scaledInt 1), alignBottom ]
-            [ smallCaps device "portfolio"
-            , smallCaps device "contact"
+            [ button { text = "portfolio", url = "#portfolio" }
+            , button { text = "contact", url = "#contact" }
             ]
         , splash device
         ]
 
 
-smallCaps : Device -> String -> Element msg
-smallCaps device value =
+button : { text : String, url : String } -> Element msg
+button data =
+    link
+        [ mouseOver [ Font.color orange ]
+        ]
+        { label = smallCaps data.text, url = data.url }
+
+
+smallCaps : String -> Element msg
+smallCaps value =
+    el [ Font.bold, Font.size (scaledInt 2) ] <| text (String.toUpper value)
+
+
+titleFont : Device -> Attribute msg
+titleFont device =
     let
         fontSize =
             case device.class of
                 Phone ->
-                    scaledInt 2
+                    scaledInt 6
 
                 Tablet ->
-                    scaledInt 2
+                    scaledInt 8
 
                 Desktop ->
-                    scaledInt 1
+                    scaledInt 9
 
                 BigDesktop ->
-                    scaledInt 1
+                    scaledInt 10
     in
-    el [ Font.bold, Font.size fontSize ] <| text (String.toUpper value)
+    Font.size fontSize
 
 
 splash : Device -> Element msg
@@ -140,20 +163,6 @@ splash device =
                 BigDesktop ->
                     px 500
 
-        fontSize =
-            case device.class of
-                Phone ->
-                    scaledInt 6
-
-                Tablet ->
-                    scaledInt 8
-
-                Desktop ->
-                    scaledInt 9
-
-                BigDesktop ->
-                    scaledInt 11
-
         imageShift =
             case device.class of
                 Phone ->
@@ -171,7 +180,7 @@ splash device =
         textShift =
             case device.class of
                 Phone ->
-                    scaled 6
+                    scaled 4
 
                 Tablet ->
                     scaled 10
@@ -186,12 +195,13 @@ splash device =
         [ width imageSize
         , alignRight
         , moveRight imageShift
+        , htmlAttribute <| Html.Attributes.style "filter" "brightness(120%) saturate(70%)"
         , onLeft
             (column
                 [ Font.bold
                 , moveRight textShift
                 , moveUp (scaled 9)
-                , Font.size fontSize
+                , titleFont device
                 , centerY
                 ]
                 [ el [ alignRight ] <| text "development"
@@ -200,6 +210,188 @@ splash device =
             )
         ]
         { src = "splash.jpg", description = "" }
+
+
+portfolio : Device -> Element msg
+portfolio device =
+    column
+        [ Element.behindContent
+            (el
+                [ height fill
+                , width
+                    (case device.class of
+                        Phone ->
+                            px 200
+
+                        _ ->
+                            px 300
+                    )
+                , Background.color lightGrey
+                , Element.onRight
+                    (el
+                        [ Font.bold
+                        , titleFont device
+                        , alignRight
+                        , moveLeft
+                            (case device.class of
+                                Phone ->
+                                    scaled 11
+
+                                _ ->
+                                    scaled 8
+                            )
+                        , moveDown (scaled 10)
+                        ]
+                        (text "portfolio")
+                    )
+                ]
+                Element.none
+            )
+        , Element.paddingEach
+            { top =
+                case device.class of
+                    Phone ->
+                        scaledInt 13
+
+                    BigDesktop ->
+                        scaledInt 15
+
+                    _ ->
+                        scaledInt 14
+            , right = 0
+            , bottom = scaledInt 10
+            , left =
+                case device.class of
+                    Phone ->
+                        scaledInt 4
+
+                    _ ->
+                        scaledInt 10
+            }
+        , spacing (scaledInt 11)
+        ]
+        [ portfolioSection device
+            { title = "Digital Transformations"
+            , subtitle = "design + development"
+            , description = "A static website for a technology consultancy. Uses latest technology: Gatsby, Web Workers, and Emotion to deliver blazing-fast load times."
+            , image =
+                { src = "digital_transformations.png"
+                , description = "A screen shot of the digital transformations website."
+                }
+            }
+        , portfolioSection device
+            { title = "Cogswell"
+            , subtitle = "design + development"
+            , description = "An event processing platform for Internet of Things devices. Single page app build using React."
+            , image =
+                { src = "cogswell.png"
+                , description = "A screen shot of the cosgwell website."
+                }
+            }
+        ]
+
+
+grey =
+    Element.rgb255 100 100 100
+
+
+lightGrey =
+    Element.rgb255 220 220 220
+
+
+orange =
+    Element.rgb255 206 73 0
+
+
+portfolioSection : Device -> { title : String, subtitle : String, description : String, image : { src : String, description : String } } -> Element msg
+portfolioSection device data =
+    (case device.class of
+        Phone ->
+            column
+
+        Tablet ->
+            column
+
+        _ ->
+            row
+    )
+        [ spacing (scaledInt 4) ]
+        [ column [ spacing 6, width (maximum 450 fill), alignTop ]
+            [ paragraph [] [ smallCaps data.title ]
+            , paragraph [ Font.color grey ] [ smallCaps data.subtitle ]
+            , paragraph [] [ text data.description ]
+            ]
+        , newTabLink [ width fill ]
+            { url = "https://digitaltransformations.us"
+            , label =
+                image
+                    [ alignTop
+                    , width fill
+                    , shadow { offset = ( 0, 10 ), size = 0, blur = 30, color = Element.rgba255 0 0 0 0.2 }
+                    , mouseOver [ moveUp 12 ]
+                    , htmlAttribute <| Html.Attributes.style "transition" "transform 0.3s"
+                    ]
+                    data.image
+            }
+        ]
+
+
+footer : Device -> Element msg
+footer device =
+    el
+        [ Element.paddingEach
+            { top = 0
+            , right = globalPadding device
+            , bottom = globalPadding device
+            , left = 0
+            }
+        , width fill
+        , Element.behindContent
+            (el
+                [ width fill
+                , height fill
+                , Background.color orange
+                , moveDown (toFloat <| globalPadding device)
+                ]
+                Element.none
+            )
+        ]
+        (el
+            [ width fill
+            , Background.color (Element.rgb255 26 26 26)
+            , Font.color (Element.rgb255 255 255 255)
+            , paddingXY (globalPadding device) (scaledInt 8)
+            ]
+            (column [ spacing (scaledInt 5), width (maximum 1366 fill), centerX ]
+                [ row [ width fill ]
+                    [ el [ Font.bold, titleFont device ] <| text "about"
+                    , image [ width (px 80), alignRight ] { src = "small_logo.svg", description = "" }
+                    ]
+                , footerSection { title = "contact", body = text "adrian.aleixandre@gmail.com" }
+                , footerSection
+                    { title = "bio"
+                    , body =
+                        textColumn [ spacing (scaledInt 1), width fill ]
+                            [ paragraph []
+                                [ text "As a passionate web developer with an eye for design, I have 3 years experience building web  applications, solving complex design and technical problems, and educating my coworkers on the latest trends in both pixels and bits."
+                                ]
+                            , paragraph []
+                                [ text "I enjoy blending the creative with the technical to craft products worth loving."
+                                ]
+                            ]
+                    }
+                , footerSection { title = "this site", body = text "Designed and build by me with Elm." }
+                ]
+            )
+        )
+
+
+footerSection : { title : String, body : Element msg } -> Element msg
+footerSection { title, body } =
+    column [ spacing (scaledInt 1), width (maximum 300 fill) ]
+        [ smallCaps title
+        , body
+        ]
 
 
 type alias Model =
