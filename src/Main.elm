@@ -215,7 +215,8 @@ splash device =
 portfolio : Device -> Element msg
 portfolio device =
     column
-        [ Element.behindContent
+        [ htmlAttribute <| Html.Attributes.id "portfolio"
+        , Element.behindContent
             (el
                 [ height fill
                 , width
@@ -339,7 +340,8 @@ portfolioSection device data =
 footer : Device -> Element msg
 footer device =
     el
-        [ Element.paddingEach
+        [ htmlAttribute <| Html.Attributes.id "contact"
+        , Element.paddingEach
             { top = 0
             , right = globalPadding device
             , bottom = globalPadding device
