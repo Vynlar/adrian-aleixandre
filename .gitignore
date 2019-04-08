@@ -2,3 +2,6 @@ elm-stuff/
 .idea/workspace.xml
 .idea/usage.statistics.xml
 .idea/tasks.xml
+.cache
+dist/
+node_modules/

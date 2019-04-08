@@ -3,7 +3,7 @@ module Main exposing (main)
 import Browser
 import Browser.Dom exposing (Viewport, getViewport)
 import Browser.Events exposing (onAnimationFrame)
-import Element exposing (Attr, Color, Element, alignBottom, alignRight, clip, clipX, column, el, fill, fillPortion, height, htmlAttribute, padding, paragraph, px, text, width)
+import Element exposing (Attr, Color, Device, DeviceClass(..), Element, alignBottom, alignLeft, alignRight, centerX, centerY, classifyDevice, clip, clipX, column, el, fill, fillPortion, height, htmlAttribute, image, maximum, moveLeft, moveRight, moveUp, onLeft, padding, paragraph, px, row, spacing, text, width)
 import Element.Background as Background
 import Element.Font as Font exposing (bold, heavy, size)
 import Html exposing (Html)
@@ -14,132 +14,226 @@ import Time exposing (Posix)
 
 main =
     Browser.element
-        { init = init
-        , view = view
+        { view = view
         , update = update
+        , init = init
         , subscriptions = subscriptions
         }
 
 
+scaled : Int -> Float
+scaled =
+    Element.modular 16 1.25
+
+
+scaledInt : Int -> Int
+scaledInt =
+    scaled >> round
+
+
+view : Model -> Html msg
+view model =
+    let
+        device =
+            classifyDevice model.window
+
+        paddingAmount =
+            case device.class of
+                Phone ->
+                    scaledInt 4
+
+                Tablet ->
+                    scaledInt 4
+
+                Desktop ->
+                    scaledInt 8
+
+                BigDesktop ->
+                    scaledInt 8
+    in
+    Element.layout
+        [ Font.family [ Font.typeface "futura-pt", Font.typeface "sans-serif" ]
+        , width fill
+        , padding paddingAmount
+        , clipX
+        ]
+        (column [ width (maximum 1366 fill), centerX, spacing (scaledInt 3) ]
+            [ header
+            , hero device
+            ]
+        )
+
+
+header : Element msg
+header =
+    row []
+        [ Element.image [ width (px (scaledInt 13)) ]
+            { src = "./logo.svg"
+            , description = "Logo"
+            }
+        ]
+
+
+hero : Device -> Element msg
+hero device =
+    let
+        buttons =
+            case device.class of
+                Phone ->
+                    column
+
+                Tablet ->
+                    row
+
+                Desktop ->
+                    row
+
+                BigDesktop ->
+                    row
+    in
+    row
+        [ width fill
+        , spacing (scaledInt 2)
+        ]
+        [ buttons [ spacing (scaledInt 1), alignBottom ]
+            [ smallCaps device "portfolio"
+            , smallCaps device "contact"
+            ]
+        , splash device
+        ]
+
+
+smallCaps : Device -> String -> Element msg
+smallCaps device value =
+    let
+        fontSize =
+            case device.class of
+                Phone ->
+                    scaledInt 2
+
+                Tablet ->
+                    scaledInt 2
+
+                Desktop ->
+                    scaledInt 1
+
+                BigDesktop ->
+                    scaledInt 1
+    in
+    el [ Font.bold, Font.size fontSize ] <| text (String.toUpper value)
+
+
+splash : Device -> Element msg
+splash device =
+    let
+        imageSize =
+            case device.class of
+                Phone ->
+                    px 300
+
+                Tablet ->
+                    px 400
+
+                Desktop ->
+                    px 400
+
+                BigDesktop ->
+                    px 500
+
+        fontSize =
+            case device.class of
+                Phone ->
+                    scaledInt 6
+
+                Tablet ->
+                    scaledInt 8
+
+                Desktop ->
+                    scaledInt 9
+
+                BigDesktop ->
+                    scaledInt 11
+
+        imageShift =
+            case device.class of
+                Phone ->
+                    scaled 10
+
+                Tablet ->
+                    scaled 13
+
+                Desktop ->
+                    0
+
+                BigDesktop ->
+                    0
+
+        textShift =
+            case device.class of
+                Phone ->
+                    scaled 6
+
+                Tablet ->
+                    scaled 10
+
+                Desktop ->
+                    scaled 12
+
+                BigDesktop ->
+                    scaled 12
+    in
+    image
+        [ width imageSize
+        , alignRight
+        , moveRight imageShift
+        , onLeft
+            (column
+                [ Font.bold
+                , moveRight textShift
+                , moveUp (scaled 9)
+                , Font.size fontSize
+                , centerY
+                ]
+                [ el [ alignRight ] <| text "development"
+                , el [ alignRight ] <| text "+ design"
+                ]
+            )
+        ]
+        { src = "splash.jpg", description = "" }
+
+
 type alias Model =
-    { scrollPosition : Float }
+    { window : { width : Int, height : Int } }
 
 
-init : () -> ( Model, Cmd Msg )
+type alias Flags =
+    { width : Int
+    , height : Int
+    }
+
+
+init : Flags -> ( Model, Cmd Msg )
 init flags =
-    ( { scrollPosition = 0
+    ( { window =
+            { width = flags.width
+            , height = flags.height
+            }
       }
     , Cmd.none
     )
 
 
 type Msg
-    = AnimationFrame Posix
-    | ViewportChange Viewport
+    = Resize { width : Int, height : Int }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        AnimationFrame _ ->
-            ( model, Task.perform ViewportChange getViewport )
-
-        ViewportChange viewport ->
-            ( { model | scrollPosition = viewport.viewport.y }, Cmd.none )
-
-
-view : Model -> Html Msg
-view model =
-    Element.layout [ height (px 1500), clipX ] (layout model)
-
-
-orange : Color
-orange =
-    Element.rgb255 206 73 0
-
-
-white : Color
-white =
-    Element.rgb 255 255 255
-
-
-rotate : Float -> Element.Attribute msg
-rotate percent =
-    let
-        lerp : Float -> Float -> String
-        lerp start end =
-            String.fromInt <| round (linearInterpolation start end percent)
-
-        x =
-            "rotate3d(1, 0, 0, " ++ lerp 45 0 ++ "deg)"
-
-        y =
-            "rotate3d(0, 1, 0, " ++ lerp 15 0 ++ "deg)"
-
-        z =
-            "rotate3d(0, 0, 1, -" ++ lerp 35 0 ++ "deg)"
-
-        scale =
-            "scale(" ++ lerp 1.5 1 ++ ")"
-
-        translate =
-            "translate3d(" ++ "200" ++ "px, " ++ "200" ++ "px, " ++ "300" ++ "px)"
-    in
-    htmlAttribute <|
-        Html.Attributes.style "transform" (x ++ " " ++ y ++ " " ++ z ++ " " ++ scale ++ " " ++ translate)
-
-
-perspective =
-    htmlAttribute <|
-        Html.Attributes.style "perspective" "400px"
-
-
-linearInterpolation : Float -> Float -> Float -> Float
-linearInterpolation start end percent =
-    start + (end - start) * percent
-
-
-container model =
-    Html.div
-        [ style "width" "200vw"
-        , style "height" "200vh"
-        , style "background" "blue"
-        , style "margin-left" "-50vw"
-        , style "display" "flex"
-        , style "justify-content" "center"
-        , style "perspective" "10000px"
-        , style "transition" "transform 2s"
-        ]
-        [ layout model
-        ]
-
-
-layout : Model -> Element Msg
-layout model =
-    column
-        [ width fill
-        , height fill
-        , rotate (clamp 0 400 model.scrollPosition / 400)
-        , htmlAttribute <| Html.Attributes.style "transition" "transform 0.05s"
-        , clip
-        ]
-        [ Element.row [ width fill, height (px 500) ]
-            [ el [ width (fillPortion 1), height fill, Background.color white ]
-                (column
-                    [ alignRight, alignBottom, padding 40, size 50, heavy ]
-                    [ el [ alignRight ] (text "designer")
-                    , el [ alignRight ] (text "+ developer")
-                    ]
-                )
-            , el [ width (fillPortion 2), height fill, Background.color orange ] Element.none
-            ]
-        , Element.row [ width fill, height (px 500) ]
-            [ el [ width (fillPortion 1), height fill, Background.color orange ] Element.none
-            , el [ width (fillPortion 2), height fill, Background.color white ] Element.none
-            ]
-        ]
+        Resize newWindow ->
+            ( { model | window = newWindow }, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    onAnimationFrame AnimationFrame
+    Browser.Events.onResize (\width height -> Resize { width = width, height = height })
