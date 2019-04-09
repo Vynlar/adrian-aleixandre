@@ -278,6 +278,7 @@ portfolio device =
             , image =
                 { src = "digital_transformations.png"
                 , description = "A screen shot of the digital transformations website."
+                , url = "https://digitaltransformations.us"
                 }
             }
         , portfolioSection device
@@ -287,6 +288,7 @@ portfolio device =
             , image =
                 { src = "cogswell.png"
                 , description = "A screen shot of the cosgwell website."
+                , url = "https://cogswell.io"
                 }
             }
         ]
@@ -304,7 +306,7 @@ orange =
     Element.rgb255 206 73 0
 
 
-portfolioSection : Device -> { title : String, subtitle : String, description : String, image : { src : String, description : String } } -> Element msg
+portfolioSection : Device -> { title : String, subtitle : String, description : String, image : { src : String, description : String, url : String } } -> Element msg
 portfolioSection device data =
     (case device.class of
         Phone ->
@@ -323,7 +325,7 @@ portfolioSection device data =
             , paragraph [] [ text data.description ]
             ]
         , newTabLink [ width fill ]
-            { url = "https://digitaltransformations.us"
+            { url = data.image.url
             , label =
                 image
                     [ alignTop
@@ -332,7 +334,7 @@ portfolioSection device data =
                     , mouseOver [ moveUp 12 ]
                     , htmlAttribute <| Html.Attributes.style "transition" "transform 0.3s"
                     ]
-                    data.image
+                    { src = data.image.src, description = data.image.description }
             }
         ]
 
