@@ -274,7 +274,7 @@ portfolio device =
         [ portfolioSection device
             { title = "Digital Transformations"
             , subtitle = "design + development"
-            , description = "A static website for a technology consultancy. Uses latest technology: Gatsby, Web Workers, and Emotion to deliver blazing-fast load times."
+            , description = "A static website for a technology consulting firm. Uses the latest technology: Gatsby, Web Workers, and Emotion to deliver blazing-fast load times."
             , image =
                 { src = "digital_transformations.png"
                 , description = "A screen shot of the digital transformations website."
@@ -284,7 +284,7 @@ portfolio device =
         , portfolioSection device
             { title = "Cogswell"
             , subtitle = "design + development"
-            , description = "An event processing platform for Internet of Things devices. Single page app build using React."
+            , description = "An event processing platform for Internet of Things devices. A single page app build using React."
             , image =
                 { src = "cogswell.png"
                 , description = "A screen shot of the cosgwell website."
@@ -377,14 +377,14 @@ footer device =
                     , body =
                         textColumn [ spacing (scaledInt 1), width fill ]
                             [ paragraph []
-                                [ text "As a passionate web developer with an eye for design, I have 3 years experience building web  applications, solving complex design and technical problems, and educating my coworkers on the latest trends in both pixels and bits."
+                                [ text "I am a passionate web developer with an eye for design. I have three years experience building web applications, solving complex design and technical problems, and educating my coworkers on the latest trends in both pixels and bits."
                                 ]
                             , paragraph []
-                                [ text "I enjoy blending the creative with the technical to craft products worth loving."
+                                [ text "I blend the creative with the technical to craft products worth loving."
                                 ]
                             ]
                     }
-                , footerSection { title = "this site", body = paragraph [] [ text "Designed and built by me with Elm." ] }
+                , footerSection { title = "this site", body = paragraph [] [ text "Designed and built by me in Elm." ] }
                 ]
             )
         )
