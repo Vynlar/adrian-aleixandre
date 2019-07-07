@@ -52,7 +52,7 @@ view model =
             classifyDevice model.window
     in
     Element.layout
-        [ Font.family [ Font.typeface "futura-pt", Font.typeface "sans-serif" ]
+        [ Font.family [ Font.typeface "Roboto", Font.typeface "sans-serif" ]
         , width fill
         , clipX
         , clipY
