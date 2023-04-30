@@ -1,7 +1,7 @@
 {
   "devDependencies": {
     "elm-hot": "^1.0.1",
-    "node-elm-compiler": "^5.0.3",
+    "node-elm-compiler": "^5.0.6",
     "parcel-plugin-static-files-copy": "^2.0.0"
   }
 }
